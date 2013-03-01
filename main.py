@@ -2,6 +2,7 @@
 import json
 import os.path
 import psycopg2
+import config
 
 from bottle import route, run, static_file
 
@@ -10,8 +11,13 @@ XIVO_VERSION = '13.04'
 STATIC_ROOT = os.path.abspath(os.path.join(
     os.path.dirname(__file__), "static"))
 
-connection = psycopg2.connect("dbname=testlink user=testlink")
+connection = psycopg2.connect(host=config.DB_HOST,
+                              port=config.DB_PORT,
+                              dbname=config.DB_NAME,
+                              user=config.DB_USER,
+                              password=config.DB_PASSWORD)
 connection.autocommit = True
+
 
 def total_manual_tests():
     query = """
@@ -154,12 +160,15 @@ def data():
     }
     return json.dumps(stats)
 
+
 @route('/')
 def index():
     return static_file('index.html', root=STATIC_ROOT)
+
 
 @route('/static/<filepath:path>')
 def server_static(filepath):
     return static_file(filepath, root=STATIC_ROOT)
 
-run(host='0.0.0.0', port=8080)
+
+run(host=config.HOST, port=config.PORT)
