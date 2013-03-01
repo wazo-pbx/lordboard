@@ -40,7 +40,8 @@ def total_manual_tests():
     cursor.execute(query, {'version': XIVO_VERSION})
     return cursor.fetchone()[0]
 
-def statuses():
+
+def test_statuses():
     query = """
     WITH latest_executions AS
     (
@@ -89,13 +90,14 @@ def statuses():
 
     return statuses
 
+
 def statuses_and_total_executed():
-    sums = statuses()
+    sums = test_statuses()
     total_executed = sum(sums.values())
     return sums, total_executed
 
 
-def tests_namelist(status):
+def tests_for_status(status):
     query = """
     WITH latest_executions AS
     (
@@ -140,11 +142,14 @@ def tests_namelist(status):
 
     return tests
 
+
 def failed_tests():
-    return tests_namelist('f')
+    return tests_for_status('f')
+
 
 def blocked_tests():
-    return tests_namelist('b')
+    return tests_for_status('b')
+
 
 @route('/json')
 def data():
