@@ -4,9 +4,7 @@ import os.path
 import psycopg2
 import config
 
-from bottle import route, run, static_file
-
-XIVO_VERSION = config.XIVO_VERSION
+from bottle import route, run, static_file, hook
 
 STATIC_ROOT = os.path.abspath(os.path.join(
     os.path.dirname(__file__), "static"))
@@ -17,6 +15,34 @@ connection = psycopg2.connect(host=config.DB_HOST,
                               user=config.DB_USER,
                               password=config.DB_PASSWORD)
 connection.autocommit = True
+
+build_id = None
+
+
+def latest_build_id():
+    query = """
+    SELECT
+        builds.id
+    FROM
+        builds
+        INNER JOIN testplans
+            ON testplans.id = builds.testplan_id
+            INNER JOIN testprojects
+                ON testprojects.id = testplans.testproject_id
+    WHERE
+        testprojects.notes = %(project)s
+    ORDER BY
+        builds.creation_ts DESC
+    LIMIT 1
+    """
+
+    cursor = connection.cursor()
+    cursor.execute(query, {'project': config.PROJECT_NAME})
+
+    build_id = cursor.fetchone()[0]
+    cursor.close()
+
+    return build_id
 
 
 def total_manual_tests():
@@ -31,13 +57,13 @@ def total_manual_tests():
                 ON builds.testplan_id = testplan_tcversions.testplan_id
     WHERE
         tcversions.execution_type = 1
-        AND builds.name = %(version)s
+        AND builds.id = %(build_id)s
     GROUP BY
         builds.id
     """
 
     cursor = connection.cursor()
-    cursor.execute(query, {'version': XIVO_VERSION})
+    cursor.execute(query, {'build_id': build_id})
     return cursor.fetchone()[0]
 
 
@@ -70,14 +96,14 @@ def test_statuses():
     INNER JOIN builds
         ON builds.id = executions.build_id
     WHERE
-        builds.name = %(version)s
+        builds.id = %(build_id)s
         AND executions.execution_type = 1
     GROUP BY
         executions.status
     """
 
     cursor = connection.cursor()
-    cursor.execute(query, {'version': XIVO_VERSION})
+    cursor.execute(query, {'build_id': build_id})
 
     statuses = {
         'passed': 0,
@@ -128,7 +154,7 @@ def tests_for_status(status):
         INNER JOIN builds
             ON builds.id = executions.build_id
     WHERE
-        builds.name = %(version)s
+        builds.id = %(build_id)s
         AND executions.execution_type = 1
         AND executions.status = %(status)s
     ORDER BY
@@ -136,7 +162,7 @@ def tests_for_status(status):
     """
 
     cursor = connection.cursor()
-    cursor.execute(query, {'version': XIVO_VERSION, 'status': status})
+    cursor.execute(query, {'build_id': build_id, 'status': status})
 
     tests = [{
         'name': "X-%s: %s" % (row[0], row[1]),
@@ -180,5 +206,10 @@ def index():
 def server_static(filepath):
     return static_file(filepath, root=STATIC_ROOT)
 
+
+@hook('before_request')
+def fetch_build_id():
+    global build_id
+    build_id = latest_build_id()
 
 run(host=config.HOST, port=config.PORT)
