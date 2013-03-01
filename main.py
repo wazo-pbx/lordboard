@@ -6,7 +6,7 @@ import config
 
 from bottle import route, run, static_file
 
-XIVO_VERSION = '13.04'
+XIVO_VERSION = config.XIVO_VERSION
 
 STATIC_ROOT = os.path.abspath(os.path.join(
     os.path.dirname(__file__), "static"))
