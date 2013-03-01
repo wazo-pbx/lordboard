@@ -1,0 +1,8 @@
+DB_HOST = 'localhost'
+DB_NAME = 'testlink'
+DB_USER = 'testlink'
+DB_PASSWORD = 'testlink'
+DB_PORT = 5432
+
+HOST = '0.0.0.0'
+PORT = 8080
