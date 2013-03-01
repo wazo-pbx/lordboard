@@ -5,6 +5,10 @@ body {
     line-height: 1;
 }
 
+#waiting {
+    font-size: 150px;
+}
+
 .title {
     font-size: 100px;
 }
@@ -18,16 +22,16 @@ body {
     font-size: 70px;
 }
 
+.heading {
+    font-size: 60px;
+}
+
 .total_stats {
     font-size: 30px;
 }
 
-#waiting {
-    font-size: 150px;
-}
-
 .passed, .failed, .blocked {
-    font-size: 100px;
+    font-size: 70px;
 }
 
 .passed {
@@ -49,6 +53,10 @@ body {
 
 .failed_list li, .blocked_list li {
     padding: 4px 4px 4px 4px;
+}
+
+.redwell, .bluewell {
+    margin-top: 5px;
 }
 
 .redwell {
