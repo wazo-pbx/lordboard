@@ -112,7 +112,8 @@ def tests_for_status(status):
 
     SELECT
         tcversions.tc_external_id       AS number,
-        parent.name                     AS name
+        parent.name                     AS name,
+        executions.notes                AS notes
     FROM
         executions
         INNER JOIN latest_executions
@@ -137,7 +138,11 @@ def tests_for_status(status):
     cursor = connection.cursor()
     cursor.execute(query, {'version': XIVO_VERSION, 'status': status})
 
-    tests = tuple("X-%s: %s" % (row[0], row[1]) for row in cursor)
+    tests = [{
+        'name': "X-%s: %s" % (row[0], row[1]),
+        'notes': row[2].strip(),
+    } for row in cursor]
+
     cursor.close()
 
     return tests

@@ -1,3 +1,13 @@
+function fillTestList(container, tests) {
+    container.empty();
+    $.each(tests, function(key, test) {
+        var element = $("<li/>").html(test.name);
+        if (test.notes != "") {
+            $("<ul><li class='note'>" + test.notes + "</li></ul>").appendTo(element);
+        }
+        element.appendTo(container);
+    });
+}
 
 function refreshData() {
     $.getJSON('/json', function(data) {
@@ -11,20 +21,11 @@ function refreshData() {
         $('.failed').html(data.statuses.failed);
         $('.blocked').html(data.statuses.blocked);
 
-        var failedUl = $(".failed_list");
-        failedUl.empty();
+        var failedContainer = $(".failed_list");
+        fillTestList(failedContainer, data.lists.failed);
 
-        $.each(data.lists.failed, function(key, val) {
-            $("<li/>").html(val).appendTo(failedUl);
-        });
-
-        var blockedUl = $(".blocked_list");
-        blockedUl.empty();
-
-        $.each(data.lists.blocked, function(key, val) {
-            $("<li/>").html(val).appendTo(blockedUl);
-        });
-
+        var blockedContainer = $(".blocked_list");
+        fillTestList(blockedContainer, data.lists.blocked);
     });
 }
 
