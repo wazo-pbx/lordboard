@@ -1,0 +1,65 @@
+body {
+    padding-top: 20px;
+    padding-bottom: 40px;
+    text-align: center;
+    line-height: 1;
+}
+
+.title {
+    font-size: 100px;
+}
+
+.counter {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.ticker {
+    font-size: 70px;
+}
+
+.total_stats {
+    font-size: 30px;
+}
+
+#waiting {
+    font-size: 150px;
+}
+
+.passed, .failed, .blocked {
+    font-size: 100px;
+}
+
+.passed {
+    color: #22BF42;
+}
+
+.failed {
+    color: #FF0000;
+}
+
+.blocked {
+    color: #525CD1;
+}
+
+.failed_list {
+    font-size: 24px;
+    text-align: left;
+}
+
+.failed_list li {
+    padding: 4px 4px 4px 4px;
+}
+
+.redwell {
+    color: #b94a48;
+    background-color: #f2dede;
+    border-color: #eed3d7;
+}
+
+.bluewell {
+    color: #3a87ad;
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+}
+
