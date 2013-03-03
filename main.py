@@ -181,6 +181,47 @@ def blocked_tests():
     return tests_for_status('b')
 
 
+def executed_per_person():
+    query = """
+    WITH latest_executions AS
+    (
+    SELECT
+        executions.tcversion_id         AS tcversion_id,
+        MAX(executions.execution_ts)    AS execution_ts
+    FROM
+        executions
+    GROUP BY
+        executions.tcversion_id
+    )
+
+    SELECT
+        users.first || ' ' || users.last    AS name,
+        COUNT(executions.id)                AS executed
+    FROM
+        executions
+        INNER JOIN latest_executions
+            ON executions.tcversion_id = latest_executions.tcversion_id
+            AND executions.execution_ts = latest_executions.execution_ts
+        INNER JOIN builds
+            ON builds.id = executions.build_id
+        INNER JOIN users
+            ON executions.tester_id = users.id
+    WHERE
+        builds.id = %(build_id)s
+        AND executions.execution_type = 1
+    GROUP BY
+        (users.first || ' ' || users.last)
+    ORDER BY
+        COUNT(executions.id) DESC
+    """
+
+    cursor = connection.cursor()
+    cursor.execute(query, {'build_id': build_id})
+
+    result = [{'name': row[0], 'executed': row[1]} for row in cursor]
+    cursor.close()
+
+    return result
 
 
 def fetch_stats():
@@ -199,15 +240,38 @@ def fetch_stats():
     return stats
 
 
+def fetch_leaderboard():
+    _, total_executed = statuses_and_total_executed()
+
+    leaderboard = {
+        'total': total_executed,
+        'scores': executed_per_person(),
+    }
+    connection.commit()
+
+    return leaderboard
+
+
 @route('/stats.json')
 def stats_json():
     stats = fetch_stats()
     return json.dumps(stats)
 
 
+@route('/leaderboard.json')
+def leaderboard_json():
+    leaderboard = fetch_leaderboard()
+    return json.dumps(leaderboard)
+
+
 @route('/')
 def index():
     return static_file('index.html', root=STATIC_ROOT)
+
+
+@route('/score')
+def score():
+    return static_file('leaderboard.html', root=STATIC_ROOT)
 
 
 @route('/static/<filepath:path>')
