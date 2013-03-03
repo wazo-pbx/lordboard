@@ -10,7 +10,7 @@ function fillTestList(container, tests) {
 }
 
 function refreshData() {
-    $.getJSON('/json', function(data) {
+    $.getJSON('/stats.json', function(data) {
         var waiting = data.total_manual - data.total_executed;
 
         $('#executed').html(data.total_executed);

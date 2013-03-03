@@ -14,7 +14,6 @@ connection = psycopg2.connect(host=config.DB_HOST,
                               dbname=config.DB_NAME,
                               user=config.DB_USER,
                               password=config.DB_PASSWORD)
-connection.autocommit = True
 
 build_id = None
 
@@ -182,8 +181,9 @@ def blocked_tests():
     return tests_for_status('b')
 
 
-@route('/json')
-def data():
+
+
+def fetch_stats():
     statuses, total_executed = statuses_and_total_executed()
     stats = {
         'total_manual': total_manual_tests(),
@@ -194,6 +194,14 @@ def data():
             'blocked': blocked_tests(),
         },
     }
+    connection.commit()
+
+    return stats
+
+
+@route('/stats.json')
+def stats_json():
+    stats = fetch_stats()
     return json.dumps(stats)
 
 
