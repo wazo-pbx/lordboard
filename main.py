@@ -196,6 +196,12 @@ def executed_per_person():
 
     SELECT
         users.first || ' ' || users.last    AS name,
+        (CASE executions.status
+         WHEN 'p' THEN 'passed'
+         WHEN 'f' THEN 'failed'
+         WHEN 'b' THEN 'blocked'
+         ELSE executions.status
+         END)                               AS status,
         COUNT(executions.id)                AS executed
     FROM
         executions
@@ -210,15 +216,23 @@ def executed_per_person():
         builds.id = %(build_id)s
         AND executions.execution_type = 1
     GROUP BY
-        (users.first || ' ' || users.last)
-    ORDER BY
-        COUNT(executions.id) DESC
+        (users.first || ' ' || users.last),
+        executions.status
     """
 
     cursor = connection.cursor()
     cursor.execute(query, {'build_id': build_id})
 
-    result = [{'name': row[0], 'executed': row[1]} for row in cursor]
+    scores = {}
+    for row in cursor:
+        name, status, executed = row
+        scores.setdefault(name, {})[status] = executed
+
+    result = [{'name': key, 'executed': value}
+              for key, value in scores.iteritems()]
+
+    result.sort(reverse=True, key=lambda x: sum(x['executed'].values()))
+
     cursor.close()
 
     return result
