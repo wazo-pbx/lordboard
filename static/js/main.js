@@ -1,3 +1,9 @@
+var timeoutId = null;
+var pageTimeoutId = null;
+
+var REFRESH_TIMEOUT = 10000;
+var PAGE_TIMEOUT = 30000;
+
 function fillTestList(container, tests) {
     container.empty();
     $.each(tests, function(key, test) {
@@ -9,7 +15,7 @@ function fillTestList(container, tests) {
     });
 }
 
-function refreshData() {
+function refreshRemaining() {
     $.getJSON('/stats.json', function(data) {
         var waiting = data.total_manual - data.total_executed;
 
@@ -29,7 +35,64 @@ function refreshData() {
     });
 }
 
+function deactivateRemaining() {
+    clearInterval(timeoutId);
+    $('#remaining').hide();
+}
+
+function deactivateScoreboard() {
+    clearInterval(timeoutId);
+    $('#scoreboard').hide();
+}
+
+function activateRemaining() {
+    $('#remaining').slideDown();
+    refreshRemaining();
+    timeoutId = setInterval(refreshRemaining, REFRESH_TIMEOUT);
+}
+
+function activateScoreboard() {
+    $('#scoreboard').slideDown();
+    refreshScoreboard();
+    timeoutId = setInterval(refreshScoreboard, REFRESH_TIMEOUT);
+}
+
+function showRemaining() {
+    $('#link-scoreboard').parent().removeClass('active');
+    deactivateScoreboard();
+    activateRemaining();
+    $('#link-remaining').parent().addClass('active');
+}
+
+function showScoreboard() {
+    $('#link-remaining').parent().removeClass('active');
+    deactivateRemaining();
+    activateScoreboard();
+    $('#link-scoreboard').parent().addClass('active');
+}
+
+function togglePages() {
+    if ( $('#remaining').is(':hidden') ) {
+        showRemaining();
+    } else {
+        showScoreboard();
+    }
+}
+
 $(function() {
-    refreshData();
-    setInterval(refreshData, 10000);
+    showRemaining();
+    pageTimeoutId = setInterval(togglePages, PAGE_TIMEOUT);
+
+    $('#link-remaining').click(function() {
+        clearInterval(pageTimeoutId);
+        showRemaining();
+        pageTimeoutId = setInterval(togglePages, PAGE_TIMEOUT);
+    });
+
+    $('#link-scoreboard').click(function() {
+        clearInterval(pageTimeoutId);
+        showScoreboard();
+        pageTimeoutId = setInterval(togglePages, PAGE_TIMEOUT);
+    });
+
 });

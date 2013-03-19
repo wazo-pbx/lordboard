@@ -283,11 +283,6 @@ def index():
     return static_file('index.html', root=STATIC_ROOT)
 
 
-@route('/score')
-def score():
-    return static_file('leaderboard.html', root=STATIC_ROOT)
-
-
 @route('/static/<filepath:path>')
 def server_static(filepath):
     return static_file(filepath, root=STATIC_ROOT)

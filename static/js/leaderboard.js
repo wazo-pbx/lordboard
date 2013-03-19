@@ -53,8 +53,3 @@ function refreshScoreboard() {
         fillScoreboard(container, data);
     });
 }
-
-$(function() {
-    refreshScoreboard();
-    setInterval(refreshScoreboard, 10000);
-});

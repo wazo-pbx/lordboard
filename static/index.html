@@ -14,61 +14,81 @@
 <body>
     <div class="navbar navbar-inverse navbar-fixed top">
         <div class="navbar-inner">
-            <a class="brand" href="/">XiVO board</a>
+            <a class="brand" href="/">Tests <img src="static/img/logoxivo.png" width="50" height="70"></a>
             <ul class="nav">
-                <li class="active"><a href="#">Tests</a></li>
-                <li><a href="/score">Pointage</a></li>
+                <li class="active"><a id="link-remaining" href="#">Tests</a></li>
+                <li><a id="link-scoreboard" href="#">Pointage</a></li>
             </ul>
         </div>
     </div>
-    <div class="container-fluid">
-        <div class="row-fluid">
-            <div class="span12">
-                <div class="jumbotron">
-                    <h1 class="title">Tests <img src="static/img/logoxivo.png"></h1>
+    <div id="remaining">
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="well counter">
+                    <p class="ticker">
+                        Il en reste <span id="waiting"></span>
+                    </p>
+                    <p class="total_stats">
+                    (<span id="executed"></span> / <span id="total"></span>
+                    exécutés)
+                    </p>
+                </div>
+            </div>
+            <div class="row-fluid">
+                <div class="span6">
+
+                    <span class="heading">
+                        Régressions <span class="failed"></span>
+                    </span>
+
+                    <div class="well redwell">
+                        <ul class="failed_list">
+                        </ul>
+                    </div>
+
+                </div>
+                <div class="span6">
+
+                    <span class="heading">
+                        Bloqués <span class="blocked"></span>
+                    </span>
+
+                    <div class="well bluewell">
+                        <ul class="blocked_list">
+                        </ul>
+                    </div>
+
                 </div>
             </div>
         </div>
-        <div class="row-fluid">
-            <div class="well counter">
-                <p class="ticker">
-                    Il en reste <span id="waiting"></span>
-                </p>
-                <p class="total_stats">
-                (<span id="executed"></span> / <span id="total"></span>
-                exécutés)
-                </p>
-            </div>
-        </div>
-        <div class="row-fluid">
-            <div class="span6">
-
-                <span class="heading">
-                    Régressions <span class="failed"></span>
-                </span>
-
-                <div class="well redwell">
-                    <ul class="failed_list">
-                    </ul>
+    </div>
+    <div id="scoreboard">
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="span12">
+                    <div class="jumbotron">
+                        <h1 class="title">Pointage</h1>
+                    </div>
                 </div>
-
             </div>
-            <div class="span6">
-
-                <span class="heading">
-                    Bloqués <span class="blocked"></span>
-                </span>
-
-                <div class="well bluewell">
-                    <ul class="blocked_list">
-                    </ul>
-                </div>
-
+            <div class="row-fluid">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th class="span3">Nom</th>
+                            <th class="span2">Tests exécutés</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody class="scores">
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
     <script src="http://code.jquery.com/jquery.js"></script>
     <script src="static/js/bootstrap.min.js"></script>
+    <script src="static/js/leaderboard.js"></script>
     <script src="static/js/main.js"></script>
 </body>
 
