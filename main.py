@@ -254,16 +254,16 @@ def fetch_stats():
     return stats
 
 
-def fetch_leaderboard():
+def fetch_scoreboard():
     _, total_executed = statuses_and_total_executed()
 
-    leaderboard = {
+    scoreboard = {
         'total': total_executed,
         'scores': executed_per_person(),
     }
     connection.commit()
 
-    return leaderboard
+    return scoreboard
 
 
 @route('/stats.json')
@@ -272,10 +272,10 @@ def stats_json():
     return json.dumps(stats)
 
 
-@route('/leaderboard.json')
-def leaderboard_json():
-    leaderboard = fetch_leaderboard()
-    return json.dumps(leaderboard)
+@route('/scoreboard.json')
+def scoreboard_json():
+    scoreboard = fetch_scoreboard()
+    return json.dumps(scoreboard)
 
 
 @route('/')

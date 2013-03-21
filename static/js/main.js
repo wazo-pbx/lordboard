@@ -15,7 +15,7 @@ function fillTestList(container, tests) {
     });
 }
 
-function refreshRemaining() {
+function refreshStats() {
     $.getJSON('/stats.json', function(data) {
         var waiting = data.total_manual - data.total_executed;
 
@@ -35,9 +35,9 @@ function refreshRemaining() {
     });
 }
 
-function deactivateRemaining() {
+function deactivateStats() {
     clearInterval(timeoutId);
-    $('#remaining').hide();
+    $('#stats').hide();
 }
 
 function deactivateScoreboard() {
@@ -45,10 +45,10 @@ function deactivateScoreboard() {
     $('#scoreboard').hide();
 }
 
-function activateRemaining() {
-    $('#remaining').slideDown();
-    refreshRemaining();
-    timeoutId = setInterval(refreshRemaining, REFRESH_TIMEOUT);
+function activateStats() {
+    $('#stats').slideDown();
+    refreshStats();
+    timeoutId = setInterval(refreshStats, REFRESH_TIMEOUT);
 }
 
 function activateScoreboard() {
@@ -57,35 +57,35 @@ function activateScoreboard() {
     timeoutId = setInterval(refreshScoreboard, REFRESH_TIMEOUT);
 }
 
-function showRemaining() {
+function showStats() {
     $('#link-scoreboard').parent().removeClass('active');
     deactivateScoreboard();
-    activateRemaining();
-    $('#link-remaining').parent().addClass('active');
+    activateStats();
+    $('#link-stats').parent().addClass('active');
 }
 
 function showScoreboard() {
-    $('#link-remaining').parent().removeClass('active');
-    deactivateRemaining();
+    $('#link-stats').parent().removeClass('active');
+    deactivateStats();
     activateScoreboard();
     $('#link-scoreboard').parent().addClass('active');
 }
 
 function togglePages() {
-    if ( $('#remaining').is(':hidden') ) {
-        showRemaining();
+    if ( $('#stats').is(':hidden') ) {
+        showStats();
     } else {
         showScoreboard();
     }
 }
 
 $(function() {
-    showRemaining();
+    showStats();
     pageTimeoutId = setInterval(togglePages, PAGE_TIMEOUT);
 
-    $('#link-remaining').click(function() {
+    $('#link-stats').click(function() {
         clearInterval(pageTimeoutId);
-        showRemaining();
+        showStats();
         pageTimeoutId = setInterval(togglePages, PAGE_TIMEOUT);
     });
 

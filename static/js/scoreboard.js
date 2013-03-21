@@ -9,10 +9,10 @@ function generateBar(type, executed, total) {
 }
 
 
-function fillScoreboard(container, leaderboard) {
+function fillScoreboard(container, scoreboard) {
     container.empty();
 
-    $.each(leaderboard.scores, function(key, person) {
+    $.each(scoreboard.scores, function(key, person) {
         var row = $("<tr/>");
         $("<td/>").html(person.name).appendTo(row);
 
@@ -26,17 +26,17 @@ function fillScoreboard(container, leaderboard) {
 		var progress = $("<div/>").addClass('progress');
 
 		if (person.executed.passed) {
-			var bar = generateBar('bar-success', person.executed.passed, leaderboard.total);
+			var bar = generateBar('bar-success', person.executed.passed, scoreboard.total);
 			progress.append(bar);
 		}
 
 		if (person.executed.failed) {
-			var bar = generateBar('bar-danger', person.executed.failed, leaderboard.total);
+			var bar = generateBar('bar-danger', person.executed.failed, scoreboard.total);
 			progress.append(bar);
 		}
 
 		if (person.executed.blocked) {
-			var bar = generateBar('bar-info', person.executed.blocked, leaderboard.total);
+			var bar = generateBar('bar-info', person.executed.blocked, scoreboard.total);
 			progress.append(bar);
 		}
 
@@ -48,7 +48,7 @@ function fillScoreboard(container, leaderboard) {
 }
 
 function refreshScoreboard() {
-    $.getJSON('/leaderboard.json', function(data) {
+    $.getJSON('/scoreboard.json', function(data) {
         var container = $(".scores");
         fillScoreboard(container, data);
     });
