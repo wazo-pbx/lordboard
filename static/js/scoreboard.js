@@ -12,7 +12,7 @@ function generateBar(type, executed, total) {
 function fillScoreboard(container, scoreboard) {
     container.empty();
 
-    $.each(scoreboard.scores, function(key, person) {
+    $.each(scoreboard.rows, function(key, person) {
         var row = $("<tr/>");
         $("<td/>").html(person.name).appendTo(row);
 
@@ -22,6 +22,8 @@ function fillScoreboard(container, scoreboard) {
 			(person.executed.blocked || 0);
 
         $("<td/>").html(total_executed).appendTo(row);
+
+        $("<td/>").html(person.last_path).appendTo(row);
 
 		var progress = $("<div/>").addClass('progress');
 

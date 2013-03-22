@@ -237,6 +237,92 @@ def executed_per_person():
 
     return result
 
+def path_for_test(tcversion_id):
+    query = """
+    WITH RECURSIVE test_path(name, id, parent_id) AS
+    (
+        SELECT name, id, parent_id FROM nodes_hierarchy WHERE id = (
+            SELECT
+                parent.parent_id
+            FROM
+                nodes_hierarchy node
+                INNER JOIN nodes_hierarchy parent
+                    ON node.parent_id = parent.id
+            WHERE
+                node.id = %(tcversion_id)s
+        )
+        UNION ALL
+            SELECT
+                child.name,
+                child.id,
+                child.parent_id
+            FROM
+                test_path
+                INNER JOIN nodes_hierarchy child
+                    ON test_path.parent_id = child.id
+                    AND child.node_type_id = 2
+    )
+    SELECT name FROM test_path
+    """
+
+    cursor = connection.cursor()
+    cursor.execute(query, {'tcversion_id': tcversion_id})
+
+    names = [row[0] for row in cursor]
+    cursor.close()
+
+    return " / ".join(reversed(names))
+
+def path_per_person():
+    query = """
+    WITH latest_executed AS
+    (
+    SELECT
+        executions.tester_id            AS tester_id,
+        MAX(executions.execution_ts)    AS execution_ts
+    FROM
+        executions
+    GROUP BY
+        executions.tester_id
+    )
+
+    SELECT
+        users.first || ' ' || users.last    AS name,
+        executions.tcversion_id             AS tcversion_id
+    FROM
+        executions
+        INNER JOIN latest_executed
+            ON executions.tester_id = latest_executed.tester_id
+            AND executions.execution_ts = latest_executed.execution_ts
+        INNER JOIN builds
+            ON builds.id = executions.build_id
+        INNER JOIN users
+            ON executions.tester_id = users.id
+    WHERE
+        builds.id = %(build_id)s
+        AND executions.execution_type = 1
+    GROUP BY
+        (users.first || ' ' || users.last),
+        executions.tcversion_id
+    """
+
+    cursor = connection.cursor()
+    cursor.execute(query, {'build_id': build_id})
+
+    results = { row[0]: path_for_test(row[1]) for row in cursor }
+    cursor.close()
+
+    return results
+
+
+def scoreboard_rows():
+    scores = executed_per_person()
+    paths = path_per_person()
+
+    for person in scores:
+        person['last_path'] = paths[person['name']]
+
+    return scores
 
 def fetch_stats():
     statuses, total_executed = statuses_and_total_executed()
@@ -259,7 +345,7 @@ def fetch_scoreboard():
 
     scoreboard = {
         'total': total_executed,
-        'scores': executed_per_person(),
+        'rows': scoreboard_rows(),
     }
     connection.commit()
 
