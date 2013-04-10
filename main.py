@@ -341,10 +341,10 @@ def fetch_stats():
 
 
 def fetch_scoreboard():
-    _, total_executed = statuses_and_total_executed()
+    total = total_manual_tests()
 
     scoreboard = {
-        'total': total_executed,
+        'total': total,
         'rows': scoreboard_rows(),
     }
     connection.commit()
