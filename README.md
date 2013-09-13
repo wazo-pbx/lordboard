@@ -11,3 +11,8 @@ Usage
     python main.py
 
 Then open your browser on http://localhost:8080
+
+License
+=======
+
+This project is under the GNU GPLv3 license
