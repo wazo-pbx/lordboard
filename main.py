@@ -110,7 +110,7 @@ def test_statuses():
         'blocked': 0,
     }
 
-    statuses.update({key: value for key, value in cursor})
+    statuses.update(dict((key, value) for key, value in cursor))
     cursor.close()
 
     return statuses
@@ -309,7 +309,7 @@ def path_per_person():
     cursor = connection.cursor()
     cursor.execute(query, {'build_id': build_id})
 
-    results = { row[0]: path_for_test(row[1]) for row in cursor }
+    results = dict((row[0], path_for_test(row[1])) for row in cursor)
     cursor.close()
 
     return results
