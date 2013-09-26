@@ -11,7 +11,7 @@ STATIC_ROOT = os.path.abspath(os.path.join(
 
 connection = psycopg2.connect(host=config.DB_HOST,
                               port=config.DB_PORT,
-                              dbname=config.DB_NAME,
+                              database=config.DB_NAME,
                               user=config.DB_USER,
                               password=config.DB_PASSWORD)
 
