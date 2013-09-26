@@ -237,6 +237,7 @@ def executed_per_person():
 
     return result
 
+
 def path_for_test(tcversion_id):
     query = """
     WITH RECURSIVE test_path(name, id, parent_id) AS
@@ -272,6 +273,7 @@ def path_for_test(tcversion_id):
     cursor.close()
 
     return " / ".join(reversed(names))
+
 
 def path_per_person():
     query = """
@@ -323,6 +325,7 @@ def scoreboard_rows():
         person['last_path'] = paths[person['name']]
 
     return scores
+
 
 def fetch_stats():
     statuses, total_executed = statuses_and_total_executed()
