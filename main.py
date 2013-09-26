@@ -382,4 +382,6 @@ def fetch_build_id():
     global build_id
     build_id = latest_build_id()
 
-run(host=config.HOST, port=config.PORT)
+
+if __name__ == "__main__":
+    run(host=config.HOST, port=config.PORT)
