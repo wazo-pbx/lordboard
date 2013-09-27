@@ -53,5 +53,6 @@ function refreshScoreboard() {
     $.getJSON('/scoreboard.json', function(data) {
         var container = $(".scores");
         fillScoreboard(container, data);
+        $('.version').html(data.version);
     });
 }

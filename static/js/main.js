@@ -22,6 +22,7 @@ function refreshStats() {
         $('#executed').html(data.total_executed);
         $('#total').html(data.total_manual);
         $("#waiting").html(waiting);
+        $('.version').html(data.version);
 
         $('.passed').html(data.statuses.passed);
         $('.failed').html(data.statuses.failed);

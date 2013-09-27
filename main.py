@@ -3,6 +3,7 @@ import json
 import os.path
 import psycopg2
 import config
+from collections import namedtuple
 
 from bottle import route, run, static_file, hook
 
@@ -15,13 +16,17 @@ connection = psycopg2.connect(host=config.DB_HOST,
                               user=config.DB_USER,
                               password=config.DB_PASSWORD)
 
-build_id = None
+
+Build = namedtuple('Build', ['id', 'name'])
+
+build = None
 
 
-def latest_build_id():
+def latest_build():
     query = """
     SELECT
-        builds.id
+        builds.id,
+        builds.name
     FROM
         builds
         INNER JOIN testplans
@@ -38,10 +43,10 @@ def latest_build_id():
     cursor = connection.cursor()
     cursor.execute(query, {'project': config.PROJECT_NAME})
 
-    build_id = cursor.fetchone()[0]
+    row = cursor.fetchone()
     cursor.close()
 
-    return build_id
+    return Build(row[0], row[1])
 
 
 def total_manual_tests():
@@ -62,7 +67,7 @@ def total_manual_tests():
     """
 
     cursor = connection.cursor()
-    cursor.execute(query, {'build_id': build_id})
+    cursor.execute(query, {'build_id': build.id})
     return cursor.fetchone()[0]
 
 
@@ -102,7 +107,7 @@ def test_statuses():
     """
 
     cursor = connection.cursor()
-    cursor.execute(query, {'build_id': build_id})
+    cursor.execute(query, {'build_id': build.id})
 
     statuses = {
         'passed': 0,
@@ -161,7 +166,7 @@ def tests_for_status(status):
     """
 
     cursor = connection.cursor()
-    cursor.execute(query, {'build_id': build_id, 'status': status})
+    cursor.execute(query, {'build_id': build.id, 'status': status})
 
     tests = [{
         'name': "X-%s: %s" % (row[0], row[1]),
@@ -221,7 +226,7 @@ def executed_per_person():
     """
 
     cursor = connection.cursor()
-    cursor.execute(query, {'build_id': build_id})
+    cursor.execute(query, {'build_id': build.id})
 
     scores = {}
     for row in cursor:
@@ -309,7 +314,7 @@ def path_per_person():
     """
 
     cursor = connection.cursor()
-    cursor.execute(query, {'build_id': build_id})
+    cursor.execute(query, {'build_id': build.id})
 
     results = dict((row[0], path_for_test(row[1])) for row in cursor)
     cursor.close()
@@ -337,6 +342,7 @@ def fetch_stats():
             'failed': failed_tests(),
             'blocked': blocked_tests(),
         },
+        'version': build.name
     }
     connection.commit()
 
@@ -349,6 +355,7 @@ def fetch_scoreboard():
     scoreboard = {
         'total': total,
         'rows': scoreboard_rows(),
+        'version': build.name
     }
     connection.commit()
 
@@ -378,9 +385,9 @@ def server_static(filepath):
 
 
 @hook('before_request')
-def fetch_build_id():
-    global build_id
-    build_id = latest_build_id()
+def fetch_build():
+    global build
+    build = latest_build()
 
 
 if __name__ == "__main__":
