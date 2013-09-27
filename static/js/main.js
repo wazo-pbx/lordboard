@@ -1,8 +1,6 @@
-var timeoutId = null;
-var pageTimeoutId = null;
+var refreshTimer = null;
 
 var REFRESH_TIMEOUT = 10000;
-var PAGE_TIMEOUT = 30000;
 
 function fillTestList(container, tests) {
     container.empty();
@@ -36,64 +34,12 @@ function refreshStats() {
     });
 }
 
-function deactivateStats() {
-    clearInterval(timeoutId);
-    $('#stats').hide();
-}
-
-function deactivateScoreboard() {
-    clearInterval(timeoutId);
-    $('#scoreboard').hide();
-}
-
-function activateStats() {
-    $('#stats').slideDown();
+function refreshAll() {
     refreshStats();
-    timeoutId = setInterval(refreshStats, REFRESH_TIMEOUT);
-}
-
-function activateScoreboard() {
-    $('#scoreboard').slideDown();
     refreshScoreboard();
-    timeoutId = setInterval(refreshScoreboard, REFRESH_TIMEOUT);
-}
-
-function showStats() {
-    $('#link-scoreboard').parent().removeClass('active');
-    deactivateScoreboard();
-    activateStats();
-    $('#link-stats').parent().addClass('active');
-}
-
-function showScoreboard() {
-    $('#link-stats').parent().removeClass('active');
-    deactivateStats();
-    activateScoreboard();
-    $('#link-scoreboard').parent().addClass('active');
-}
-
-function togglePages() {
-    if ( $('#stats').is(':hidden') ) {
-        showStats();
-    } else {
-        showScoreboard();
-    }
 }
 
 $(function() {
-    showStats();
-    pageTimeoutId = setInterval(togglePages, PAGE_TIMEOUT);
-
-    $('#link-stats').click(function() {
-        clearInterval(pageTimeoutId);
-        showStats();
-        pageTimeoutId = setInterval(togglePages, PAGE_TIMEOUT);
-    });
-
-    $('#link-scoreboard').click(function() {
-        clearInterval(pageTimeoutId);
-        showScoreboard();
-        pageTimeoutId = setInterval(togglePages, PAGE_TIMEOUT);
-    });
-
+    refreshAll();
+    refreshTimer = setInterval(refreshAll, REFRESH_TIMEOUT);
 });
