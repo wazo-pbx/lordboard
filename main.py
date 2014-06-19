@@ -15,6 +15,9 @@ from bottle import route, run, static_file, hook
 STATIC_ROOT = os.path.abspath(os.path.join(
     os.path.dirname(__file__), "static"))
 
+psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
+psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
+
 connection = psycopg2.connect(host=config.DB_HOST,
                               port=config.DB_PORT,
                               database=config.DB_NAME,
@@ -411,10 +414,10 @@ def group_executions_by_folder(cursor):
 
     for folder, rows in itertools.groupby(cursor, key):
         executions = tuple({'number': row[1],
-                            'name': row[2].decode('utf8'),
+                            'name': row[2],
                             'version': row[3],
-                            'status': row[4].decode('utf8')} for row in rows)
-        report.append((folder.decode('utf8'), executions))
+                            'status': row[4]} for row in rows)
+        report.append((folder, executions))
 
     return report
 
