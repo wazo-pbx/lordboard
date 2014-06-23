@@ -330,6 +330,33 @@ def path_per_person():
     return results
 
 
+def build_testers():
+    scores = executed_per_person()
+    paths = path_per_person()
+
+    for person in scores:
+        person['last_path'] = paths[person['name']]
+
+    return scores
+
+
+def dashboard():
+    failed = failed_tests()
+    blocked = blocked_tests()
+    testers = build_testers()
+
+    stats = test_statuses()
+    stats['total'] = total_manual_tests()
+
+    return {
+        'version': build.version,
+        'stats': stats,
+        'failed': failed,
+        'blocked': blocked,
+        'testers': testers
+    }
+
+
 def manual_test_report():
     query = """
     WITH RECURSIVE tree(id, name) AS
