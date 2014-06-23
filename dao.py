@@ -351,7 +351,6 @@ def build_testers():
 
 
 def dashboard():
-
     with db.transaction():
         failed = failed_tests()
         blocked = blocked_tests()
@@ -360,15 +359,13 @@ def dashboard():
         stats = test_statuses()
         stats['total'] = total_manual_tests()
 
-        dashboard = {
-            'version': build.version,
-            'stats': stats,
-            'failed': failed,
-            'blocked': blocked,
-            'testers': testers
-        }
-
-    return dashboard
+    return {
+        'version': build.version,
+        'stats': stats,
+        'failed': failed,
+        'blocked': blocked,
+        'testers': testers
+    }
 
 
 def manual_test_report():
@@ -441,8 +438,9 @@ def manual_test_report():
         parent.node_order DESC
     """
 
-    rows = db.rows(query, build_id=build.id)
-    tests = group_executions_by_folder(rows)
+    with db.transaction():
+        rows = db.rows(query, build_id=build.id)
+        tests = group_executions_by_folder(rows)
 
     return {'version': build.version,
             'tests': tests}
