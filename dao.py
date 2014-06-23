@@ -52,8 +52,12 @@ class Database(object):
 
     @contextmanager
     def transaction(self):
-        with self.connection:
+        try:
             yield
+            self.connection.commit()
+        except:
+            self.connection.rollback()
+            raise
 
 
 db = Database.from_config(config)
