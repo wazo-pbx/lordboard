@@ -401,9 +401,10 @@ def manual_test_report():
     """
 
     rows = db.rows(query, build_id=build.id)
-    report = group_executions_by_folder(rows)
+    tests = group_executions_by_folder(rows)
 
-    return report
+    return {'version': build.version,
+            'tests': tests}
 
 
 def group_executions_by_folder(rows):
