@@ -2,6 +2,7 @@ import config
 import psycopg2
 import itertools
 from collections import namedtuple
+from contextlib import contextmanager
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
@@ -48,6 +49,11 @@ class Database(object):
         cursor = self.connection.cursor()
         cursor.execute(query, params)
         return cursor
+
+    @contextmanager
+    def transaction(self):
+        with self.connection:
+            yield
 
 
 db = Database.from_config(config)
@@ -341,20 +347,24 @@ def build_testers():
 
 
 def dashboard():
-    failed = failed_tests()
-    blocked = blocked_tests()
-    testers = build_testers()
 
-    stats = test_statuses()
-    stats['total'] = total_manual_tests()
+    with db.transaction():
+        failed = failed_tests()
+        blocked = blocked_tests()
+        testers = build_testers()
 
-    return {
-        'version': build.version,
-        'stats': stats,
-        'failed': failed,
-        'blocked': blocked,
-        'testers': testers
-    }
+        stats = test_statuses()
+        stats['total'] = total_manual_tests()
+
+        dashboard = {
+            'version': build.version,
+            'stats': stats,
+            'failed': failed,
+            'blocked': blocked,
+            'testers': testers
+        }
+
+    return dashboard
 
 
 def manual_test_report():
