@@ -1,4 +1,6 @@
 var refreshTimer = null;
+var matrixTimer = null;
+var drawMatrix = null;
 
 var REFRESH_TIMEOUT = 10000;
 
@@ -16,6 +18,8 @@ function refresh() {
 
         var blocked = $(".blocked_list");
         fillTestList(blocked, data.blocked);
+
+        checkForMatrix(data);
     });
 }
 
@@ -89,6 +93,61 @@ function fillTestList(container, tests) {
         }
         element.appendTo(container);
     });
+}
+
+function checkForMatrix(data) {
+    var executed = data.stats.passed + data.stats.failed + data.stats.blocked;
+    var waiting = data.stats.total - executed;
+
+    if (waiting < 10) {
+        if (drawMatrix == null) {
+            setupMatrix();
+            runMatrix();
+        }
+    }
+}
+
+function setupMatrix() {
+    var matrix = $('<canvas id="matrix" width="500" height="400" style="border: 1px solid #c3c3c3;"></canvas>"');
+    $('#remaining').append(matrix);
+
+    var canvas = matrix[0];
+    var screen = window.screen;
+    var width = canvas.width = screen.width;
+    var height = canvas.height;
+    var ctx = canvas.getContext('2d');
+    var yPositions = Array(300).join(0).split('');
+
+    drawMatrix = function() {
+        ctx.fillStyle='rgba(0,0,0,.05)';
+        ctx.fillRect(0,0,width,height);
+        ctx.fillStyle='#0F0';
+        ctx.font = '10pt Georgia';
+
+        yPositions.map(function(y, index){
+            text = String.fromCharCode(1e2+Math.random()*33);
+            x = (index * 10)+10;
+            ctx.fillText(text, x, y);
+
+            if(y > 100 + Math.random()*1e4) {
+                yPositions[index]=0;
+            } else {
+                yPositions[index] = y + 10;
+            }
+        });
+    }
+}
+
+
+function runMatrix() {
+    stopMatrix();
+    matrixTimer = setInterval(drawMatrix, 33);
+}
+
+function stopMatrix() {
+    if (matrixTimer != null) {
+        clearInterval(matrixTimer);
+    }
 }
 
 $(function() {
