@@ -99,15 +99,17 @@ function checkForMatrix(data) {
     var executed = data.stats.passed + data.stats.failed + data.stats.blocked;
     var waiting = data.stats.total - executed;
 
-    if (waiting < 10) {
-        if (drawMatrix == null) {
-            setupMatrix();
-            runMatrix();
-        }
+    if (waiting == 42 && drawMatrix == null) {
+        setupMatrix();
+        runMatrix();
+    } else if (waiting != 42 && drawMatrix != null) {
+        stopMatrix();
+        removeMatrix();
     }
 }
 
 function setupMatrix() {
+    //original code found at http://www.arungudelli.com/html5/matrix-effect-using-html5-and-javascript/
     var matrix = $('<canvas id="matrix" width="500" height="400" style="border: 1px solid #c3c3c3;"></canvas>"');
     $('#remaining').append(matrix);
 
@@ -136,6 +138,10 @@ function setupMatrix() {
             }
         });
     }
+}
+
+function removeMatrix() {
+    $('#matrix').remove();
 }
 
 
