@@ -4,9 +4,8 @@ import os.path
 import json
 
 import config
-import report
-import dao
-
+from testlink import dao, report
+from testlink import setup as setup_testlink
 from bottle import route, run, static_file, hook
 
 STATIC_ROOT = os.path.abspath(os.path.join(
@@ -37,8 +36,14 @@ def server_static(filepath):
 
 @hook('before_request')
 def refresh_build():
-    dao.refresh_build()
+    dao.build.refresh()
 
 
 if __name__ == "__main__":
+    setup_testlink(host=config.DB_HOST,
+                   port=config.DB_PORT,
+                   database=config.DB_NAME,
+                   user=config.DB_USER,
+                   password=config.DB_PASSWORD,
+                   project=config.PROJECT_NAME)
     run(host=config.HOST, port=config.PORT, reloader=config.DEBUG_RELOAD)
