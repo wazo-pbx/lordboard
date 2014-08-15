@@ -1,3 +1,2 @@
-psycopg2
 bottle
-docutils
+git+git://github.com/gelendir/pytestlink
