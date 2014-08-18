@@ -39,11 +39,15 @@ def refresh_build():
     dao.build.refresh()
 
 
-if __name__ == "__main__":
+def setup():
     setup_testlink(host=config.DB_HOST,
                    port=config.DB_PORT,
                    database=config.DB_NAME,
                    user=config.DB_USER,
                    password=config.DB_PASSWORD,
                    project=config.PROJECT_NAME)
+
+
+if __name__ == "__main__":
+    setup()
     run(host=config.HOST, port=config.PORT, reloader=config.DEBUG_RELOAD)
