@@ -1,0 +1,3 @@
+leader: "Félicitations à {name} ! Tu est maintenant le meilleur testeur."
+loser: "{name}, je ne suis pas fier de toi. Tu est maintenant le pire testeur."
+total_left: "Courage, il ne reste que {number} tests !"
