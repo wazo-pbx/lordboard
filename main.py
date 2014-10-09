@@ -2,13 +2,13 @@
 from __future__ import unicode_literals
 import os.path
 import json
-import subprocess
 
 import config
 import achievements
+import audio
 from testlink import dao, report
 from testlink import setup as setup_testlink
-from bottle import route, run, static_file, hook, request
+from bottle import route, run, static_file, hook, request, abort
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
 STATIC_ROOT = os.path.join(ROOT, "static")
@@ -42,31 +42,27 @@ def server_static(filepath):
 def list_achievements():
     announces = quests.update()
     timestamp = request.query.get('timestamp', None)
-    print "timestamp", timestamp
     if timestamp:
         announces = [a for a in announces if a['timestamp'] > timestamp]
+    for announce in announces:
+        announce['audio'] = "/achievements/{}.wav".format(announce['timestamp'])
     return json.dumps(announces)
 
 
 @route('/achievements/<timestamp>.wav')
 def generate_audio(timestamp):
     achievements = quests.update()
-    entries = [a['announcement']
-               for a in achievements
-               if a['timestamp'] == timestamp]
+    sentences = [a['announcement']
+                 for a in achievements
+                 if a['timestamp'] == timestamp]
 
-    subprocess.check_call(['mkdir', '-p', '/tmp/lordboard'])
+    if not sentences:
+        abort(404)
 
-    text_filepath = '/tmp/lordboard/{}.txt'.format(timestamp)
-    with open(text_filepath, 'w') as f:
-        f.write((u" ".join(entries).encode('utf8')))
+    filename = "{}.wav".format(timestamp)
+    audio.generate(filename, sentences)
 
-    filepath = '/tmp/lordboard/{}.wav'.format(timestamp)
-
-    cmd = ['espeak', '-v', 'fr-fr', '-s', '120', '-f', text_filepath, '-w', filepath]
-    subprocess.check_call(cmd)
-
-    return static_file('{}.wav'.format(timestamp), root='/tmp/lordboard')
+    return static_file(filename, root=config.AUDIO_DIR)
 
 
 @hook('before_request')
