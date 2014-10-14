@@ -13,7 +13,7 @@ class ConversionError(Exception):
 
 def generate(filename, sentences):
     if not os.path.exists(config.AUDIO_DIR):
-        os.mkdir(config.AUDIO_DIR)
+        subprocess.check_call(['mkdir', '-p', config.AUDIO_DIR])
 
     filepath = os.path.join(config.AUDIO_DIR, filename)
 

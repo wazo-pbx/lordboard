@@ -51,7 +51,7 @@ def list_achievements():
 
 @route('/achievements/<timestamp>.wav')
 def generate_audio(timestamp):
-    achievements = quests.update()
+    achievements = quests.announces()
     sentences = [a['announcement']
                  for a in achievements
                  if a['timestamp'] == timestamp]
