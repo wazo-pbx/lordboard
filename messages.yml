@@ -1,3 +1,5 @@
-leader: "Félicitations à {name} ! Tu est maintenant le meilleur testeur."
-loser: "{name}, je ne suis pas fier de toi. Tu est maintenant le pire testeur."
-total_left: "Courage, il ne reste que {number} tests !"
+leader: "Félicitations à {name} ! Tu est maintenant le meilleur testeur"
+total_left: "Courage, il ne reste que {number} tests"
+finished: "Tous les tests sont terminés. Allez boire de la bière maintenant"
+tests_per_person: "{name} a bu du redbull. Il a completé {number} tests"
+regression: "Lancez des tomates sur {name}, il a trouvé une régression"

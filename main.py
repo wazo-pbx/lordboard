@@ -40,7 +40,7 @@ def server_static(filepath):
 
 @route('/achievements.json')
 def list_achievements():
-    announces = quests.update()
+    announces = quests.announces()
     timestamp = request.query.get('timestamp', None)
     if timestamp:
         announces = [a for a in announces if a['timestamp'] > timestamp]
