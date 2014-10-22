@@ -53,16 +53,17 @@ class Leader(Quest):
 
     def filter_logs(self):
         logs = self.dao.all_logs()
-        first_log, logs = logs[0], logs[1:]
-        scores = self.initial_scores(first_log, logs)
-        last_person = self.find_person(scores)
+        if len(logs) > 0:
+            first_log, logs = logs[0], logs[1:]
+            scores = self.initial_scores(first_log, logs)
+            last_person = self.find_person(scores)
 
-        for log in logs:
-            scores[log['user']] += 1
-            person = self.find_person(scores)
-            if person != last_person:
-                yield log
-                last_person = person
+            for log in logs:
+                scores[log['user']] += 1
+                person = self.find_person(scores)
+                if person != last_person:
+                    yield log
+                    last_person = person
 
     def initial_scores(self, first_log, logs):
         scores = dict((row['user'], 0) for row in logs)
