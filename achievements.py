@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import yaml
 import itertools
 from testlink import dao
+from datetime import timedelta
 
 
 DT_FORMAT = "%Y-%m-%dT%H:%M:%S"
@@ -40,6 +41,11 @@ class Quest(object):
                 'category': self.category,
                 'announcement': message}
 
+    def group_by_person(self, logs):
+        sorted_logs = sorted(logs, key=lambda x: (x['user'], x['timestamp']))
+        grouped_logs = itertools.groupby(sorted_logs, key=lambda x: x['user'])
+        return grouped_logs
+
 
 class Leader(Quest):
 
@@ -73,9 +79,9 @@ class Leader(Quest):
         return self.message.format('leader', name=log['user'])
 
 
-class TotalLeft(Quest):
+class TestsRemaining(Quest):
 
-    category = 'total_left'
+    category = 'remaining'
 
     def filter_logs(self):
         total = self.dao.total_manual_tests()
@@ -89,57 +95,56 @@ class TotalLeft(Quest):
         return self.message.format(self.category, number=self.number)
 
 
-class HundredLeft(TotalLeft):
+class HundredRemaining(TestsRemaining):
 
     number = 100
 
 
-class FortyTwoLeft(TotalLeft):
+class FortyTwoRemaining(TestsRemaining):
 
     number = 42
 
 
-class TwentyLeft(TotalLeft):
+class TwentyRemaining(TestsRemaining):
 
     number = 20
 
 
-class TenLeft(TotalLeft):
+class TenRemaining(TestsRemaining):
 
     number = 10
 
 
-class TestsFinished(TotalLeft):
+class TestsFinished(TestsRemaining):
 
     number = 0
     category = 'finished'
 
 
-class TestsPerPerson(Quest):
+class TestsCompleted(Quest):
 
-    category = 'tests_per_person'
+    category = 'completed'
 
     def format_message(self, log):
         return self.message.format(self.category, name=log['user'], number=self.number)
 
     def filter_logs(self):
-        sort_by = lambda x: (x['user'], x['timestamp'])
-        all_logs = sorted(self.dao.all_logs(), key=sort_by)
-
-        logs_per_person = itertools.groupby(all_logs, lambda x: x['user'])
+        logs_per_person = self.group_by_person(self.dao.all_logs())
         for person, logs in logs_per_person:
             logs = list(logs)
             if len(logs) >= self.number:
                 yield logs[self.number - 1]
 
 
-class FiftyPerPerson(TestsPerPerson):
+class FiftyCompleted(TestsCompleted):
 
+    category = '50completed'
     number = 50
 
 
-class HunderdPerPerson(TestsPerPerson):
+class HunderdCompleted(TestsCompleted):
 
+    category = '100completed'
     number = 100
 
 
@@ -148,14 +153,93 @@ class Regression(Quest):
     category = 'regression'
 
     def filter_logs(self):
-        logs = self.dao.log_journal(status='failed')
-        sorted_logs = sorted(logs, key=lambda x: (x['user'], x['timestamp']))
-        grouped_logs = itertools.groupby(sorted_logs, key=lambda x: x['user'])
-        for person, logs in grouped_logs:
+        logs_per_person = self.group_by_person(self.dao.log_journal(status='failed'))
+        for person, logs in logs_per_person:
             yield logs.next()
 
     def format_message(self, log):
         return self.message.format(self.category, name=log['user'])
+
+
+class Speedy(Quest):
+
+    category = 'speedy'
+
+    def filter_logs(self):
+        logs_per_person = self.group_by_person(self.dao.all_logs())
+        for person, logs in logs_per_person:
+            for log in self.filter_on_timestamp(logs):
+                yield log
+
+    def filter_on_timestamp(self, logs):
+        logs = list(logs)
+        while len(logs) >= self.nb_tests:
+            log = logs[0]
+            max_time = log['timestamp'] + timedelta(seconds=self.seconds)
+            filtered = [l for l in logs
+                        if log['timestamp'] <= l['timestamp'] <= max_time]
+            if len(filtered) >= self.nb_tests:
+                yield filtered[self.nb_tests - 1]
+            logs.pop(0)
+
+    def format_message(self, log):
+        return self.message.format(self.category, name=log['user'],
+                                   number=self.nb_tests,
+                                   minutes=self.seconds / 60)
+
+
+class FiveMinuteSpeedy(Speedy):
+
+    nb_tests = 10
+    seconds = 300
+
+
+class IceBreaker(Quest):
+
+    category = 'icebreaker'
+
+    def filter_logs(self):
+        logs = self.dao.all_logs()
+        if len(logs) > 0:
+            yield logs[0]
+
+    def format_message(self, log):
+        return self.message.format(self.category, name=log['user'])
+
+
+class SingleTest(Quest):
+
+    def filter_logs(self):
+        for log in self.dao.all_logs():
+            if log['number'] == self.number:
+                yield log
+
+    def format_message(self, log):
+        return self.message.format(self.category, name=log['user'], number=log['number'])
+
+
+class ContextSeperation(SingleTest):
+
+    category = 'context_separation'
+    number = 235
+
+
+class Windows(SingleTest):
+
+    category = 'windows'
+    number = 125
+
+
+class Mac(SingleTest):
+
+    category = 'mac'
+    number = 124
+
+
+class Chat(SingleTest):
+
+    category = 'chat'
+    number = 155
 
 
 class Message(object):
@@ -175,14 +259,20 @@ def setup(message_filepath):
     message = Message(message_filepath)
     quests = (
         Leader(dao, message),
-        HundredLeft(dao, message),
-        FortyTwoLeft(dao, message),
-        TwentyLeft(dao, message),
-        TenLeft(dao, message),
+        HundredRemaining(dao, message),
+        FortyTwoRemaining(dao, message),
+        TwentyRemaining(dao, message),
+        TenRemaining(dao, message),
         TestsFinished(dao, message),
-        FiftyPerPerson(dao, message),
-        HunderdPerPerson(dao, message),
+        FiftyCompleted(dao, message),
+        HunderdCompleted(dao, message),
         Regression(dao, message),
+        FiveMinuteSpeedy(dao, message),
+        IceBreaker(dao, message),
+        ContextSeperation(dao, message),
+        Windows(dao, message),
+        Mac(dao, message),
+        Chat(dao, message),
     )
     quest_manager = QuestManager(quests)
     return quest_manager
