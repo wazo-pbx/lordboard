@@ -26,7 +26,7 @@ function refresh() {
 function fillStats(stats) {
     var executed = stats.passed + stats.failed + stats.blocked;
     var waiting = stats.total - executed;
-    var percent = (executed / stats.total).toFixed(2);
+    var percent = (executed / stats.total * 100).toFixed(2);
 
     $('#executed').html(executed);
     $('#total').html(stats.total);
