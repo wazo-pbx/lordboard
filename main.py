@@ -4,8 +4,6 @@ import os.path
 import json
 
 import config
-import achievements
-import audio
 from testlink import dao, report
 from testlink import setup as setup_testlink
 from bottle import route, run, static_file, hook, request, abort
@@ -13,7 +11,6 @@ from bottle import route, run, static_file, hook, request, abort
 ROOT = os.path.abspath(os.path.dirname(__file__))
 STATIC_ROOT = os.path.join(ROOT, "static")
 
-quests = achievements.setup(os.path.join(ROOT, 'messages.yml'))
 
 
 @route('/report.<output>')
@@ -38,31 +35,8 @@ def server_static(filepath):
     return static_file(filepath, root=STATIC_ROOT)
 
 
-@route('/achievements.json')
-def list_achievements():
-    announces = quests.announces()
-    timestamp = request.query.get('timestamp', None)
-    if timestamp:
-        announces = [a for a in announces if a['timestamp'] > timestamp]
-    for announce in announces:
-        announce['audio'] = "/achievements/{}.wav".format(announce['timestamp'])
-    return json.dumps(announces)
 
 
-@route('/achievements/<timestamp>.wav')
-def generate_audio(timestamp):
-    achievements = quests.announces()
-    sentences = [a['announcement']
-                 for a in achievements
-                 if a['timestamp'] == timestamp]
-
-    if not sentences:
-        abort(404)
-
-    filename = "{}.wav".format(timestamp)
-    audio.generate(filename, sentences)
-
-    return static_file(filename, root=config.AUDIO_DIR)
 
 
 @hook('before_request')
