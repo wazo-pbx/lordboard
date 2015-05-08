@@ -4,13 +4,16 @@ import os.path
 import json
 
 import config
+from datetime import datetime
+
 from testlink import dao, report
 from testlink import setup as setup_testlink
-from bottle import route, run, static_file, hook, request, abort
+from bottle import route, run, static_file, hook, request
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
 STATIC_ROOT = os.path.join(ROOT, "static")
 
+DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 
 
 @route('/report.<output>')
@@ -35,8 +38,21 @@ def server_static(filepath):
     return static_file(filepath, root=STATIC_ROOT)
 
 
+@route('/logs')
+def log_journal():
+    latest = request.query.get('latest', '1') == '1'
+    status = request.query.get('status')
+    sort = request.query.get('sort', 'timestamp')
+    order = request.query.get('order', 'asc')
+    timestamp = None
+    if 'timestamp' in request.query:
+        timestamp = datetime.strptime(request.query['timestamp'], DATETIME_FORMAT)
 
+    logs = dao.log_journal(latest, timestamp, status, sort, order)
+    for log in logs:
+        log['timestamp'] = log['timestamp'].strftime(DATETIME_FORMAT)
 
+    return {'logs': logs}
 
 
 @hook('before_request')
