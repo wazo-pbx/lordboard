@@ -1,4 +1,4 @@
-XiVO Tests
+Wazo Tests
 ==========
 
 Simple Scoreboard showing tests that fail. Makes test days a bit more fun !
